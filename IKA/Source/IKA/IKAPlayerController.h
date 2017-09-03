@@ -42,11 +42,17 @@ protected:
 	/** Handles stafing movement, left and right */
 	void MoveRightOne(float Val);
 
+	/** Handles place bomb */
+	void PlaceBombOne();
+
 	/** Handles moving forward/backward */
 	void MoveForwardTwo(float Val);
 
 	/** Handles stafing movement, left and right */
 	void MoveRightTwo(float Val);
+
+	/** Handles place bomb */
+	void PlaceBombTwo();
 };
 
 

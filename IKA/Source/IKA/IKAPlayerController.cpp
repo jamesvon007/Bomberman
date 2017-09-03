@@ -4,7 +4,7 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "IKACharacter.h"
+#include "IKAPlayerCharacter.h"
 
 AIKAPlayerController::AIKAPlayerController()
 {
@@ -31,8 +31,10 @@ void AIKAPlayerController::SetupInputComponent()
 	check(InputComponent);
 	InputComponent->BindAxis("MoveForwardOne", this, &AIKAPlayerController::MoveForwardOne);
 	InputComponent->BindAxis("MoveRightOne", this, &AIKAPlayerController::MoveRightOne);
+	InputComponent->BindAction("PlaceBombOne", IE_Released, this, &AIKAPlayerController::PlaceBombOne);
 	InputComponent->BindAxis("MoveForwardTwo", this, &AIKAPlayerController::MoveForwardTwo);
 	InputComponent->BindAxis("MoveRightTwo", this, &AIKAPlayerController::MoveRightTwo);
+	InputComponent->BindAction("PlaceBombTwo", IE_Released, this, &AIKAPlayerController::PlaceBombTwo);
 }
 
 void AIKAPlayerController::MoveToMouseCursor()
@@ -117,6 +119,16 @@ void AIKAPlayerController::MoveRightOne(float Value)
 	}
 }
 
+void AIKAPlayerController::PlaceBombOne()
+{
+	AIKAPlayerCharacter* Player = Cast<AIKAPlayerCharacter>(GetPawn());
+	if (Player)
+	{
+		// place bomb
+		Player->PlaceBomb();
+	}
+}
+
 void AIKAPlayerController::MoveForwardTwo(float Value)
 {
 	if (Value != 0.0f)
@@ -155,6 +167,24 @@ void AIKAPlayerController::MoveRightTwo(float Value)
 				}
 				return;
 			}
+		}
+	}
+}
+
+void AIKAPlayerController::PlaceBombTwo()
+{
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC != this)
+		{
+			// place bomb
+			AIKAPlayerCharacter* Player = Cast<AIKAPlayerCharacter>(PC->GetPawn());
+			if (Player)
+			{
+				Player->PlaceBomb();
+			}
+			return;
 		}
 	}
 }

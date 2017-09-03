@@ -25,5 +25,40 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
+public:
+	/** check if pawn is still alive */
+	bool IsAlive() const;
+
+	/** kill this pawn */
+	void Die();
+
+	void AddBlastRangeMultiplier(float Multiplier);
+
+	void AddMoveSpeedMultiplier(float Multiplier);
+
+	void AddBombAmount(uint8 Increment);
+
+	void EnableUsingRemoteControlledBomb(float Duration);
+
+	void RestoreBombAmount();
+
+	void PlaceBomb();
+
+	// Current health of the Pawn
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	float Health;
+
+private:
+	float BlastRangeMultiplier;
+
+	uint8 BombAmount;
+
+	float MoveSpeedMultiplier;
+
+	uint8 UseRemoteControlledBomb : 1;
+
+	float RemoteControlledBombAbilityActiveDuration;
+
 };
 

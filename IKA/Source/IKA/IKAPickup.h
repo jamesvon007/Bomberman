@@ -32,10 +32,10 @@ protected:
 	virtual void OnPickedUp();
 
 	/** check if pawn can use this pickup */
-	virtual bool CanBePickedUp(class AIKAPlayerCharacter* Pawn) const;
+	virtual bool CanBePickedUp(class AIKACharacter* Pawn) const;
 
 	/** give pickup */
-	virtual void GivePickupTo(class AIKAPlayerCharacter* Pawn);
+	virtual void GivePickupTo();
 
 	/** FX of active pickup */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -54,11 +54,11 @@ protected:
 	uint32 bIsActive : 1;
 
 	/* The character who has picked up this pickup */
-	AIKAPlayerCharacter* PickedUpBy;
+	AIKACharacter* PickedUpBy;
 
 protected:
 	/** handle touches */
-	void PickupOnTouch(class AIKAPlayerCharacter* Pawn);
+	void PickupOnTouch(class AIKACharacter* Pawn);
 
 public:	
 	// Called every frame

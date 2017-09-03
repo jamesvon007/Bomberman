@@ -13,8 +13,14 @@ UCLASS()
 class IKA_API AIKAPickupMoreBombs : public AIKAPickup
 {
 	GENERATED_UCLASS_BODY()
+
+	/** Bomb Slot */
+	UPROPERTY(EditDefaultsOnly, Category = PickupBonus)
+	uint8 BombAmountBonusAddition;
 	
-	
+protected:
+	/** upgrade number of bomb slot*/
+	virtual void GivePickupTo() override;
 	
 	
 };

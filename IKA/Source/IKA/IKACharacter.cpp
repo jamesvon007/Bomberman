@@ -10,6 +10,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Materials/Material.h"
+#include "IKA.h"
+#include "IKABomb.h"
 
 AIKACharacter::AIKACharacter()
 {
@@ -40,9 +42,72 @@ AIKACharacter::AIKACharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
+
+	Health = 100.f;
+	BlastRangeMultiplier = 1.f;
+	BombAmount = 1;
+	MoveSpeedMultiplier = 1.f;
+	UseRemoteControlledBomb = false;
+	RemoteControlledBombAbilityActiveDuration = 10.f;
 }
 
 void AIKACharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+}
+
+bool AIKACharacter::IsAlive() const
+{
+	return Health > 0;
+}
+
+void AIKACharacter::Die()
+{
+	Health = -1.f;
+}
+
+void AIKACharacter::AddBlastRangeMultiplier(float Multiplier)
+{
+	BlastRangeMultiplier += Multiplier;
+}
+
+void AIKACharacter::AddMoveSpeedMultiplier(float Multiplier)
+{
+	MoveSpeedMultiplier += Multiplier;
+	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedMultiplier;
+}
+
+void AIKACharacter::AddBombAmount(uint8 Increment)
+{
+	BombAmount += Increment;
+}
+
+void AIKACharacter::RestoreBombAmount()
+{
+	++BombAmount;
+}
+
+void AIKACharacter::EnableUsingRemoteControlledBomb(float Duration)
+{
+	UseRemoteControlledBomb = true;
+	RemoteControlledBombAbilityActiveDuration = Duration;
+}
+
+void AIKACharacter::PlaceBomb()
+{
+	if (BombAmount > 0)
+	{
+		FVector SpawnLocation = GetActorLocation();
+		AActor* Actor = GetWorld()->SpawnActor(AIKABomb::StaticClass(), &SpawnLocation);
+		if (AIKABomb * Bomb = Cast<AIKABomb>(Actor))
+		{
+			--BombAmount;
+			Bomb->Instigator = this;
+		}
+	}
+
 }

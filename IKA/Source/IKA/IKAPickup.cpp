@@ -4,7 +4,7 @@
 #include "IKA.h"
 #include "Components/CapsuleComponent.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "IKAPlayerCharacter.h"
+#include "IKACharacter.h"
 
 // Sets default values
 AIKAPickup::AIKAPickup()
@@ -20,6 +20,7 @@ AIKAPickup::AIKAPickup(const FObjectInitializer& ObjectInitializer) : Super(Obje
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CollisionComp->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
 	RootComponent = CollisionComp;
 
 	PickupPSC = ObjectInitializer.CreateDefaultSubobject<UParticleSystemComponent>(this, TEXT("PickupFX"));
@@ -34,7 +35,7 @@ AIKAPickup::AIKAPickup(const FObjectInitializer& ObjectInitializer) : Super(Obje
 void AIKAPickup::NotifyActorBeginOverlap(class AActor* Other)
 {
 	Super::NotifyActorBeginOverlap(Other);
-	PickupOnTouch(Cast<AIKAPlayerCharacter>(Other));
+	PickupOnTouch(Cast<AIKACharacter>(Other));
 }
 
 // Called when the game starts or when spawned
@@ -59,22 +60,22 @@ void AIKAPickup::SpawnPickup()
 	OnSpawned();
 
 	TSet<AActor*> OverlappingPawns;
-	GetOverlappingActors(OverlappingPawns, AIKAPlayerCharacter::StaticClass());
+	GetOverlappingActors(OverlappingPawns, AIKACharacter::StaticClass());
 
 	for (AActor* OverlappingPawn : OverlappingPawns)
 	{
-		PickupOnTouch(CastChecked<AIKAPlayerCharacter>(OverlappingPawn));
+		PickupOnTouch(CastChecked<AIKACharacter>(OverlappingPawn));
 	}
 }
 
-void AIKAPickup::PickupOnTouch(class AIKAPlayerCharacter* Pawn)
+void AIKAPickup::PickupOnTouch(class AIKACharacter* Pawn)
 {
 	if (bIsActive && Pawn && Pawn->IsAlive() && !IsPendingKill())
 	{
 		if (CanBePickedUp(Pawn))
 		{
-			GivePickupTo(Pawn);
 			PickedUpBy = Pawn;
+			GivePickupTo();
 
 			if (!IsPendingKill())
 			{
@@ -86,11 +87,11 @@ void AIKAPickup::PickupOnTouch(class AIKAPlayerCharacter* Pawn)
 
 }
 
-void AIKAPickup::GivePickupTo(class AIKAPlayerCharacter* Pawn)
+void AIKAPickup::GivePickupTo()
 {
 }
 
-bool AIKAPickup::CanBePickedUp(class AIKAPlayerCharacter* Pawn) const
+bool AIKAPickup::CanBePickedUp(class AIKACharacter* Pawn) const
 {
 	return Pawn && Pawn->IsAlive();
 }

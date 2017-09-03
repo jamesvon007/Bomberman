@@ -6,7 +6,7 @@
 
 AIKAPlayerCharacter::AIKAPlayerCharacter(const FObjectInitializer& ObjectInitializer)
 {
-	Health = 100.f;
+
 }
 
 void AIKAPlayerCharacter::PostInitializeComponents()
@@ -24,10 +24,7 @@ void AIKAPlayerCharacter::PostInitializeComponents()
 	}
 }
 
-bool AIKAPlayerCharacter::IsAlive() const
-{
-	return Health > 0;
-}
+
 
 
 

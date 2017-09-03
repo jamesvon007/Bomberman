@@ -14,7 +14,11 @@ class IKA_API AIKAPickupFasterRunSpeed : public AIKAPickup
 {
 	GENERATED_UCLASS_BODY()
 	
+	/** Move speed */
+	UPROPERTY(EditDefaultsOnly, Category = PickupBonus)
+	float MoveSpeedBonusAddition;
 	
-	
-	
+protected:
+	/** upgrade move speed*/
+	virtual void GivePickupTo() override;
 };
