@@ -45,6 +45,9 @@ protected:
 	/** Handles place bomb */
 	void PlaceBombOne();
 
+	/** Remote Controll bomb blast */
+	void RemoteTriggerOne();
+
 	/** Handles moving forward/backward */
 	void MoveForwardTwo(float Val);
 
@@ -53,6 +56,9 @@ protected:
 
 	/** Handles place bomb */
 	void PlaceBombTwo();
+
+	/** Remote Controll bomb blast */
+	void RemoteTriggerTwo();
 };
 
 

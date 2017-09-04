@@ -18,13 +18,14 @@ AIKABomb::AIKABomb(const FObjectInitializer& ObjectInitializer) : Super(ObjectIn
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	UBoxComponent* CollisionComp = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("BombCollisionComp"));
-	CollisionComp->InitBoxExtent(FVector(25, 25, 25));
-	CollisionComp->SetCollisionObjectType(ECC_WorldStatic);
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComp->SetCollisionResponseToAllChannels(ECR_Block);
-	CollisionComp->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
-	RootComponent = CollisionComp;
+	BoxComponent = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("BombCollisionComp"));
+	BoxComponent->InitBoxExtent(FVector(25, 25, 25));
+	BoxComponent->SetCollisionObjectType(COLLISION_BOMB);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	BoxComponent->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
+	BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	RootComponent = BoxComponent;
 
 	Mesh = ObjectInitializer.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("BombMesh"));
 	Mesh->SetupAttachment(RootComponent);
@@ -35,6 +36,7 @@ AIKABomb::AIKABomb(const FObjectInitializer& ObjectInitializer) : Super(ObjectIn
 	Exploding = false;
 	BlastFxSpawned = false;
 	TickTimer = 1.2f;
+	RemoteTrigger = false;
 }
 
 // Called when the game starts or when spawned
@@ -42,8 +44,11 @@ void AIKABomb::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AIKABomb::OnBlastStart, FMath::Max(0.1f, BlastTime), false);
+	if (!RemoteTrigger)
+	{
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AIKABomb::OnBlastStart, FMath::Max(0.1f, BlastTime), false);
+	}
 }
 
 // Called every frame
@@ -111,16 +116,16 @@ void AIKABomb::OnBlastStart()
 	Mesh->DestroyComponent();
 }
 
-void AIKABomb::OnBlastEnd()
-{
-	AIKACharacter * Pawn = GetInstigator<AIKACharacter>();
-	if (Pawn)
-	{
-		Pawn->RestoreBombAmount();
-	}
-
-	SetLifeSpan(0.1f);
-}
+// void AIKABomb::OnBlastEnd()
+// {
+// 	AIKACharacter * Pawn = GetInstigator<AIKACharacter>();
+// 	if (Pawn)
+// 	{
+// 		Pawn->RestoreBombAmount();
+// 	}
+// 
+// 	SetLifeSpan(0.1f);
+// }
 
 void AIKABomb::SpawnBlastEffect(const TArray<FVector>& EndPoints)
 {
@@ -138,6 +143,11 @@ void AIKABomb::SpawnBlastEffect(const TArray<FVector>& EndPoints)
 			BlastPSC->SetVectorParameter(TrailTargetParam, EndPoint);
 			BlastPSC->SetFloatParameter(TrailLifetimeParam, BlastDuration);
 		}
+	}
+
+	if (BlastSound)
+	{
+		UGameplayStatics::PlaySound2D(this, BlastSound);
 	}
 	
 	BlastFxSpawned = true;

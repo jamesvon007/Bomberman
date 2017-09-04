@@ -46,18 +46,33 @@ AIKACharacter::AIKACharacter()
 	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_BOMB, ECR_Overlap);
 
 	Health = 100.f;
 	BlastRangeMultiplier = 1.f;
 	BombAmount = 1;
+	RemoteBombAmount = 0;
 	MoveSpeedMultiplier = 1.f;
 	UseRemoteControlledBomb = false;
 	RemoteControlledBombAbilityActiveDuration = 10.f;
+
+}
+
+void AIKACharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitPlayerUI();
 }
 
 void AIKACharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+	if (UseRemoteControlledBomb)
+	{
+		TimedPowerupRemainTime.RemainTime -= DeltaSeconds;
+	}
 }
 
 bool AIKACharacter::IsAlive() const
@@ -88,26 +103,101 @@ void AIKACharacter::AddBombAmount(uint8 Increment)
 
 void AIKACharacter::RestoreBombAmount()
 {
-	++BombAmount;
+	if (UseRemoteControlledBomb)
+	{
+		++RemoteBombAmount;
+	}
+	else
+	{
+		++BombAmount;
+	}
+}
+
+void AIKACharacter::ConsumeBombAmount()
+{
+	if (UseRemoteControlledBomb)
+	{
+		--RemoteBombAmount;
+	}
+	else
+	{
+		--BombAmount;
+	}
+}
+
+bool AIKACharacter::CheckBombAmount()
+{
+	if (UseRemoteControlledBomb)
+	{
+		return RemoteBombAmount > 0;
+	}
+	else
+	{
+		return BombAmount > 0;
+	}
 }
 
 void AIKACharacter::EnableUsingRemoteControlledBomb(float Duration)
 {
 	UseRemoteControlledBomb = true;
 	RemoteControlledBombAbilityActiveDuration = Duration;
+	++RemoteBombAmount;
+
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AIKACharacter::DisableUsingRemoteControlledBomb, FMath::Max(3.f, RemoteControlledBombAbilityActiveDuration), false);
+
+	TimedPowerupRemainTime.RemainTime = Duration;
 }
 
-void AIKACharacter::PlaceBomb()
+void AIKACharacter::DisableUsingRemoteControlledBomb()
 {
-	if (BombAmount > 0)
-	{
-		FVector SpawnLocation = GetActorLocation();
-		AActor* Actor = GetWorld()->SpawnActor(AIKABomb::StaticClass(), &SpawnLocation);
-		if (AIKABomb * Bomb = Cast<AIKABomb>(Actor))
-		{
-			--BombAmount;
-			Bomb->Instigator = this;
-		}
-	}
-
+	UseRemoteControlledBomb = false;
+	RemoteControlledBombAbilityActiveDuration = 0.f;
+	--RemoteBombAmount;
+	SetRemoteBomb(nullptr);
 }
+
+void AIKACharacter::TriggerRemoteBomb()
+{
+	if (RemoteBomb.Pin().IsValid())
+	{
+		RemoteBomb.Pin()->Trigger();
+	}
+}
+
+AIKACharacter::UTimedPowerupRemainTime AIKACharacter::GetTimedPowerupRemainTime()
+{
+	return TimedPowerupRemainTime;
+}
+
+void AIKACharacter::SetRemoteBomb(AIKABomb* bomb)
+{
+	RemoteBomb = TWeakPtr<AIKABomb>(TSharedPtr<AIKABomb>(bomb));
+}
+
+void AIKACharacter::InitPlayerUI()
+{
+	UTextRenderComponent* TimedPowerupRemainTimeComp = NewObject<UTextRenderComponent>(this);
+	AddOwnedComponent(TimedPowerupRemainTimeComp);
+	//TimedPowerupRemainTimeComp->SetupAttachment(GetCapsuleComponent());
+	TimedPowerupRemainTimeComp->RegisterComponent();
+	TimedPowerupRemainTimeComp->SetMobility(EComponentMobility::Movable);
+	TimedPowerupRemainTimeComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TimedPowerupRemainTimeComp->bSelectable = false;
+
+	TimedPowerupRemainTimeComp->bGenerateOverlapEvents = false;
+	TimedPowerupRemainTimeComp->SetCanEverAffectNavigation(false);
+	TimedPowerupRemainTimeComp->bCastDynamicShadow = false;
+	TimedPowerupRemainTimeComp->bCastStaticShadow = false;
+	TimedPowerupRemainTimeComp->bAffectDistanceFieldLighting = false;
+	TimedPowerupRemainTimeComp->bAffectDynamicIndirectLighting = false;
+
+	TimedPowerupRemainTimeComp->SetFont(TextFont);
+	TimedPowerupRemainTimeComp->SetWorldSize(80.0f);
+	//TimedPowerupRemainTime->SetTextMaterial(UserScaleIndicatorMaterial);
+	TimedPowerupRemainTimeComp->SetHorizontalAlignment(EHTA_Center);
+	TimedPowerupRemainTimeComp->SetVisibility(false);
+
+	TimedPowerupRemainTime.TextRenderComponent = TimedPowerupRemainTimeComp;
+}
+

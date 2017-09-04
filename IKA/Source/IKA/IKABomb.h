@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine.h"
 #include "GameFramework/Actor.h"
 #include "IKABomb.generated.h"
 
@@ -24,7 +25,7 @@ class IKA_API AIKABomb : public AActor
 	float BlastDuration;
 
 	/** Blast range */
-	UPROPERTY(EditDefaultsOnly, Category = Bomb)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bomb)
 	float BlastRange;
 	
 public:	
@@ -41,8 +42,9 @@ protected:
 	/** Blast start */
 	virtual void OnBlastStart();
 
-	/** Blast end */
-	virtual void OnBlastEnd();
+	/** blueprint event: blast end */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnBlastEnd();
 
 	/** FX of blast */
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
@@ -60,18 +62,29 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Effects)
 	TArray<FVector> BlastDirection;
 
+	/** sound played on respawn */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	USoundCue* BlastSound;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	bool Exploding;
+	uint8 Exploding : 1;
 
-	bool BlastFxSpawned;
+	uint8 BlastFxSpawned : 1;
+
+	UPROPERTY(BlueprintReadWrite, Category = Bomb, meta = (AllowPrivateAccess = "true"))
+	uint8 RemoteTrigger : 1;
 
 	float TickTimer;
 
 	void SpawnBlastEffect(const TArray<FVector>& EndPoints);
 	
 	bool BlastTrace(TArray<struct FHitResult>& OutHits, const FVector& StartTrace, const FVector& EndTrace) const;
+
+	/** The BoxComponent being used for collision. */
+	UPROPERTY(Category = Bomb, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* BoxComponent;
 };

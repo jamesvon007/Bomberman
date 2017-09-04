@@ -32,9 +32,11 @@ void AIKAPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveForwardOne", this, &AIKAPlayerController::MoveForwardOne);
 	InputComponent->BindAxis("MoveRightOne", this, &AIKAPlayerController::MoveRightOne);
 	InputComponent->BindAction("PlaceBombOne", IE_Released, this, &AIKAPlayerController::PlaceBombOne);
+	InputComponent->BindAction("RemoteTriggerOne", IE_Released, this, &AIKAPlayerController::RemoteTriggerOne);
 	InputComponent->BindAxis("MoveForwardTwo", this, &AIKAPlayerController::MoveForwardTwo);
 	InputComponent->BindAxis("MoveRightTwo", this, &AIKAPlayerController::MoveRightTwo);
 	InputComponent->BindAction("PlaceBombTwo", IE_Released, this, &AIKAPlayerController::PlaceBombTwo);
+	InputComponent->BindAction("RemoteTriggerTwo", IE_Released, this, &AIKAPlayerController::RemoteTriggerTwo);
 }
 
 void AIKAPlayerController::MoveToMouseCursor()
@@ -125,7 +127,16 @@ void AIKAPlayerController::PlaceBombOne()
 	if (Player)
 	{
 		// place bomb
-		Player->PlaceBomb();
+		Player->OnPlaceBomb();
+	}
+}
+
+void AIKAPlayerController::RemoteTriggerOne()
+{
+	AIKAPlayerCharacter* Player = Cast<AIKAPlayerCharacter>(GetPawn());
+	if (Player)
+	{
+		Player->TriggerRemoteBomb();
 	}
 }
 
@@ -171,6 +182,11 @@ void AIKAPlayerController::MoveRightTwo(float Value)
 	}
 }
 
+void AIKAPlayerController::RemoteTriggerTwo()
+{
+
+}
+
 void AIKAPlayerController::PlaceBombTwo()
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
@@ -182,7 +198,7 @@ void AIKAPlayerController::PlaceBombTwo()
 			AIKAPlayerCharacter* Player = Cast<AIKAPlayerCharacter>(PC->GetPawn());
 			if (Player)
 			{
-				Player->PlaceBomb();
+				Player->OnPlaceBomb();
 			}
 			return;
 		}
