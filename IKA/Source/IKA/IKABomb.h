@@ -35,6 +35,8 @@ public:
 	// Trigger bomb blast
 	void Trigger();
 
+	bool IsRemoteTrigger() { return RemoteTrigger; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -66,6 +68,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Effects)
 	USoundCue* BlastSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = Bomb)
+	uint8 RemoteTrigger : 1;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -74,9 +79,6 @@ private:
 	uint8 Exploding : 1;
 
 	uint8 BlastFxSpawned : 1;
-
-	UPROPERTY(BlueprintReadWrite, Category = Bomb, meta = (AllowPrivateAccess = "true"))
-	uint8 RemoteTrigger : 1;
 
 	float TickTimer;
 

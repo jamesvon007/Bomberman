@@ -6,6 +6,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "IKA.h"
 #include "IKACharacter.h"
+#include "IKAPickup.h"
+#include "IKADestructibleWall.h"
 
 // Sets default values
 AIKABomb::AIKABomb()
@@ -70,13 +72,23 @@ void AIKABomb::Tick(float DeltaTime)
 				BlastTrace(MultiHits, GetActorLocation(), GetActorLocation() + BlastRange * Direction);
 				for (const FHitResult& HitResult : MultiHits)
 				{
+					AActor* Actor = HitResult.Actor.Get();
+
+					if (Actor == this)
+					{
+						continue;
+					}
+
 					if (HitResult.bBlockingHit)
 					{
 						EndPoint = HitResult.ImpactPoint;
+						if (AIKADestructibleWall* Wall = Cast<AIKADestructibleWall>(Actor))
+						{
+							Wall->Destroy();
+						}
 					}
 					else
 					{
-						AActor* Actor = HitResult.Actor.Get();
 						if (AIKACharacter* Character = Cast<AIKACharacter>(Actor))
 						{
 							Character->Die();
@@ -84,6 +96,10 @@ void AIKABomb::Tick(float DeltaTime)
 						else if (AIKABomb* Bomb = Cast<AIKABomb>(Actor))
 						{
 							Bomb->Trigger();
+						}
+						else if (AIKAPickup* Pickup = Cast<AIKAPickup>(Actor))
+						{
+							Pickup->Destroy();
 						}
 					}
 				}
@@ -156,7 +172,7 @@ void AIKABomb::SpawnBlastEffect(const TArray<FVector>& EndPoints)
 bool AIKABomb::BlastTrace(TArray<struct FHitResult>& OutHits, const FVector& StartTrace, const FVector& EndTrace) const
 {
 	// Perform trace to retrieve hit info
-	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(BlastTrace), true, Instigator);
+	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(BlastTrace), true);
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 

@@ -14,14 +14,14 @@ AIKAPickup::AIKAPickup()
 
 AIKAPickup::AIKAPickup(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	UCapsuleComponent* CollisionComp = ObjectInitializer.CreateDefaultSubobject<UCapsuleComponent>(this, TEXT("CollisionComp"));
-	CollisionComp->InitCapsuleSize(40.0f, 50.0f);
-	CollisionComp->SetCollisionObjectType(COLLISION_PICKUP);
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	CollisionComp->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
-	RootComponent = CollisionComp;
+	BoxComponent = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("CollisionComp"));
+	BoxComponent->InitBoxExtent(FVector(15, 15, 15));
+	BoxComponent->SetCollisionObjectType(COLLISION_PICKUP);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	BoxComponent->SetCollisionResponseToChannel(COLLISION_BLAST, ECR_Overlap);
+	RootComponent = BoxComponent;
 
 	PickupPSC = ObjectInitializer.CreateDefaultSubobject<UParticleSystemComponent>(this, TEXT("PickupFX"));
 	PickupPSC->bAutoActivate = false;
@@ -38,6 +38,17 @@ void AIKAPickup::NotifyActorBeginOverlap(class AActor* Other)
 	PickupOnTouch(Cast<AIKACharacter>(Other));
 }
 
+// Destroy pickup
+void AIKAPickup::Destroy()
+{
+	// prevent pickup from being destroyed as soon as spawn
+	if (GetWorld()->GetTimeSeconds() - GetGameTimeSinceCreation() < 2.f)
+	{
+		return;
+	}
+	SetLifeSpan(0.1f);
+}
+
 // Called when the game starts or when spawned
 void AIKAPickup::BeginPlay()
 {
@@ -50,7 +61,6 @@ void AIKAPickup::BeginPlay()
 void AIKAPickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AIKAPickup::SpawnPickup()

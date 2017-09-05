@@ -14,7 +14,20 @@ class IKA_API AIKADestructibleWall : public AIKAWall
 {
 	GENERATED_UCLASS_BODY()
 	
+	/** FX of being destroyed */
+	UPROPERTY(EditDefaultsOnly, Category = Effects)
+	UParticleSystem* DestroyedFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float SpawningChanceWhenDestroyed;
+
+	/** blueprint event: spawn pickup */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSpawnPickup();
 	
-	
-	
+public:
+	void Destroy();
+
+private:
+	void OnDestroy();
 };

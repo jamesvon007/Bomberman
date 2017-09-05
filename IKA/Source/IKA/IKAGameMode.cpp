@@ -1,21 +1,47 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "IKAGameMode.h"
 #include "IKAPlayerController.h"
-#include "IKACharacter.h"
 #include "IKAHUD.h"
-#include "UObject/ConstructorHelpers.h"
+#include "IKAGameState.h"
 
-AIKAGameMode::AIKAGameMode()
+
+AIKAGameMode::AIKAGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	// use our custom PlayerController class
 	PlayerControllerClass = AIKAPlayerController::StaticClass();
 	HUDClass = AIKAHUD::StaticClass();
+}
 
-	// set default pawn class to our Blueprinted character
-// 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/TopDownCPP/Blueprints/TopDownCharacter"));
-// 	if (PlayerPawnBPClass.Class != NULL)
-// 	{
-// 		DefaultPawnClass = PlayerPawnBPClass.Class;
-// 	}
+void AIKAGameMode::DefaultTimer()
+{
+	if (AIKAGameState* const IKAGameState = Cast<AIKAGameState>(GameState))
+	{
+		if (IKAGameState->RemainingTime > 0)
+		{
+			IKAGameState->RemainingTime--;
+
+			if (IKAGameState->RemainingTime <= 0)
+			{
+				FName MatchName = GetMatchState();
+			}
+		}
+	}
+}
+
+void AIKAGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	if (AIKAGameState* const IKAGameState = Cast<AIKAGameState>(GameState))
+	{
+		IKAGameState->RemainingTime = RoundTime;
+	}
+
+}
+
+void AIKAGameMode::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+
+	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &AIKAGameMode::DefaultTimer, GetWorldSettings()->GetEffectiveTimeDilation(), true);
 }

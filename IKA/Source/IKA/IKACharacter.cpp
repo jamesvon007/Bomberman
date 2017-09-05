@@ -101,27 +101,33 @@ void AIKACharacter::AddBombAmount(uint8 Increment)
 	BombAmount += Increment;
 }
 
-void AIKACharacter::RestoreBombAmount()
+void AIKACharacter::RestoreBombAmount(AIKABomb* Bomb)
 {
-	if (UseRemoteControlledBomb)
+	if (Bomb)
 	{
-		++RemoteBombAmount;
-	}
-	else
-	{
-		++BombAmount;
+		if (Bomb->IsRemoteTrigger() && UseRemoteControlledBomb)
+		{
+			++RemoteBombAmount;
+		}
+		else
+		{
+			++BombAmount;
+		}
 	}
 }
 
-void AIKACharacter::ConsumeBombAmount()
+void AIKACharacter::ConsumeBombAmount(AIKABomb* Bomb)
 {
-	if (UseRemoteControlledBomb)
+	if (Bomb)
 	{
-		--RemoteBombAmount;
-	}
-	else
-	{
-		--BombAmount;
+		if (Bomb->IsRemoteTrigger() && UseRemoteControlledBomb)
+		{
+			--RemoteBombAmount;
+		}
+		else
+		{
+			--BombAmount;
+		}
 	}
 }
 
@@ -141,7 +147,7 @@ void AIKACharacter::EnableUsingRemoteControlledBomb(float Duration)
 {
 	UseRemoteControlledBomb = true;
 	RemoteControlledBombAbilityActiveDuration = Duration;
-	++RemoteBombAmount;
+	RemoteBombAmount = 1;
 
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AIKACharacter::DisableUsingRemoteControlledBomb, FMath::Max(3.f, RemoteControlledBombAbilityActiveDuration), false);
@@ -153,26 +159,20 @@ void AIKACharacter::DisableUsingRemoteControlledBomb()
 {
 	UseRemoteControlledBomb = false;
 	RemoteControlledBombAbilityActiveDuration = 0.f;
-	--RemoteBombAmount;
-	SetRemoteBomb(nullptr);
+	RemoteBombAmount = 0;
 }
 
 void AIKACharacter::TriggerRemoteBomb()
 {
-	if (RemoteBomb.Pin().IsValid())
+	if (RemoteBomb)
 	{
-		RemoteBomb.Pin()->Trigger();
+		RemoteBomb->Trigger();
 	}
 }
 
 AIKACharacter::UTimedPowerupRemainTime AIKACharacter::GetTimedPowerupRemainTime()
 {
 	return TimedPowerupRemainTime;
-}
-
-void AIKACharacter::SetRemoteBomb(AIKABomb* bomb)
-{
-	RemoteBomb = TWeakPtr<AIKABomb>(TSharedPtr<AIKABomb>(bomb));
 }
 
 void AIKACharacter::InitPlayerUI()

@@ -14,6 +14,12 @@ class IKA_API AIKAHUD : public AHUD
 {
 	GENERATED_UCLASS_BODY()
 	
+	/** Normal font. */
+	UPROPERTY()
+	UFont* NormalFont;
+
+	/** UI scaling factor for other resolutions than Full HD. */
+	float ScaleUI;
 	
 public:
 	/** Main HUD update loop. */
@@ -21,8 +27,14 @@ public:
 
 	virtual void BeginPlay() override;
 
+	void RegisterCharacter(class AIKACharacter* Character);
+
 	/** Draw player property in game*/
 	void DrawPlayerTimedPowerupRemainTime();
 
+	/** Draw player owned bomb amount in HUD*/
+	void DrawBombAmount();
+
 private:
+	TArray<AIKACharacter*> Characters;
 };

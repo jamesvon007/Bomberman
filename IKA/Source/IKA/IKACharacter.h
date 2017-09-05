@@ -39,6 +39,7 @@ private:
 
 public:
 	/** check if pawn is still alive */
+	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const;
 
 	/** kill this pawn */
@@ -57,10 +58,10 @@ public:
 	void TriggerRemoteBomb();
 
 	UFUNCTION(BlueprintCallable)
-	void RestoreBombAmount();
+	void RestoreBombAmount(class AIKABomb* Bomb);
 
 	UFUNCTION(BlueprintCallable)
-	void ConsumeBombAmount();
+	void ConsumeBombAmount(class AIKABomb* Bomb);
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckBombAmount();
@@ -69,13 +70,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPlaceBomb();
 
-	/** set remote-controlled bomb placed */
-	UFUNCTION(BlueprintCallable)
-	void SetRemoteBomb(class AIKABomb* bomb);
-
 	UTimedPowerupRemainTime GetTimedPowerupRemainTime();
 
 	bool IsUsingRemoteControlledBomb() { return UseRemoteControlledBomb;}
+
+	uint8 GetRemoteBombAmount() { return RemoteBombAmount;	}
 
 	// Current health of the Pawn
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
@@ -84,6 +83,10 @@ public:
 	// Bomb amount
 	UPROPERTY(BlueprintReadWrite)
 	uint8 BombAmount;
+
+	/** set remote-controlled bomb placed */
+	UPROPERTY(BlueprintReadWrite)
+	class AIKABomb* RemoteBomb;
 
 	UPROPERTY(EditAnywhere, Category = Font)
 	UFont* TextFont;
@@ -99,9 +102,7 @@ private:
 
 	float RemoteControlledBombAbilityActiveDuration;
 
-	TWeakPtr<AIKABomb> RemoteBomb;
-
-	// how many bombs this pawn can place
+	// how many remote-controlled bombs this pawn can place
 	uint8 RemoteBombAmount;
 
 	UTimedPowerupRemainTime TimedPowerupRemainTime;

@@ -5,11 +5,26 @@
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "IKAPlayerCharacter.h"
+#include "IKAHUD.h"
 
 AIKAPlayerController::AIKAPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+}
+
+void AIKAPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AIKAHUD* HUD = Cast<AIKAHUD>(GetHUD());
+	if (HUD)
+	{
+		if (AIKACharacter* Character = Cast<AIKACharacter>(GetPawn()))
+		{
+			HUD->RegisterCharacter(Character);
+		}
+	}
 }
 
 void AIKAPlayerController::PlayerTick(float DeltaTime)
@@ -184,7 +199,20 @@ void AIKAPlayerController::MoveRightTwo(float Value)
 
 void AIKAPlayerController::RemoteTriggerTwo()
 {
-
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC != this)
+		{
+			// place bomb
+			AIKAPlayerCharacter* Player = Cast<AIKAPlayerCharacter>(PC->GetPawn());
+			if (Player)
+			{
+				Player->TriggerRemoteBomb();
+			}
+			return;
+		}
+	}
 }
 
 void AIKAPlayerController::PlaceBombTwo()

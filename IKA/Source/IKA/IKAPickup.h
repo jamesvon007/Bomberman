@@ -18,6 +18,8 @@ public:
 	// Sets default values for this actor's properties
 	AIKAPickup();
 
+	void Destroy();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -69,4 +71,6 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Effects)
 	UParticleSystemComponent* PickupPSC;
 	
+	UPROPERTY(Category = Pickup, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* BoxComponent;
 };
