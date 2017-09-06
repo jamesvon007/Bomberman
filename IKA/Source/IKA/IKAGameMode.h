@@ -22,11 +22,40 @@ class IKA_API AIKAGameMode : public AGameMode
 	/** starts new match */
 	virtual void HandleMatchHasStarted() override;
 
+	virtual void RestartGame() override;
+
+	uint8 GetPlayerFirstScore() { return PlayerFirstScore;	}
+
+	uint8 GetPlayerSecondScore() { return PlayerSecondScore;}
+
 protected:
 	/** match duration */
-	UPROPERTY(config)
+	UPROPERTY(EditAnywhere, Category = GameMode)
 	int32 RoundTime;
 
 	/** Handle for efficient management of DefaultTimer timer */
 	FTimerHandle TimerHandle_DefaultTimer;
+
+	void DetermineMatchWinner();
+
+	void FinishMatch();
+
+public:
+	enum EMatchResult
+	{
+		WIN,
+		DRAW,
+		LOSE
+	};
+
+	EMatchResult GetMatchResult() const {	return MatchResult;	}
+	class AIKACharacter* GetLastWinCharacter() { return LastWinCharacter; }
+
+	APlayerController* GetMainPlayerController() { return MainPlayerController;	};
+private:
+	EMatchResult MatchResult;
+	AIKACharacter* LastWinCharacter;
+	APlayerController* MainPlayerController;
+	uint8 PlayerFirstScore;
+	uint8 PlayerSecondScore;
 };

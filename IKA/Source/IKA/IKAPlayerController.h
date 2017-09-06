@@ -60,6 +60,9 @@ protected:
 
 	/** Remote Controll bomb blast */
 	void RemoteTriggerTwo();
+
+	/** Restart game after ending*/
+	void ResetGame();
 };
 
 

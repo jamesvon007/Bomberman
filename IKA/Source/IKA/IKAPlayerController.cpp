@@ -6,6 +6,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "IKAPlayerCharacter.h"
 #include "IKAHUD.h"
+#include "IKAGameMode.h"
 
 AIKAPlayerController::AIKAPlayerController()
 {
@@ -52,6 +53,7 @@ void AIKAPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRightTwo", this, &AIKAPlayerController::MoveRightTwo);
 	InputComponent->BindAction("PlaceBombTwo", IE_Released, this, &AIKAPlayerController::PlaceBombTwo);
 	InputComponent->BindAction("RemoteTriggerTwo", IE_Released, this, &AIKAPlayerController::RemoteTriggerTwo);
+	InputComponent->BindAction("ResetGame", IE_Released, this, &AIKAPlayerController::ResetGame);
 }
 
 void AIKAPlayerController::MoveToMouseCursor()
@@ -152,6 +154,15 @@ void AIKAPlayerController::RemoteTriggerOne()
 	if (Player)
 	{
 		Player->TriggerRemoteBomb();
+	}
+}
+
+void AIKAPlayerController::ResetGame()
+{
+	AIKAGameMode* GameMode = Cast<AIKAGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->RestartGame();
 	}
 }
 

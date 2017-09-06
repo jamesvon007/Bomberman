@@ -33,7 +33,13 @@ public:
 	void DrawPlayerTimedPowerupRemainTime();
 
 	/** Draw player owned bomb amount in HUD*/
-	void DrawBombAmount();
+	void DrawPlayerNameBombAmount();
+
+	/** Draw countdown timer in HUD*/
+	void DrawCountdownTimer();
+
+	/** Draw Match Info*/
+	void DrawMatchInfo( class AIKAGameMode* GameMode);
 
 private:
 	TArray<AIKACharacter*> Characters;

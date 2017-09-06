@@ -12,6 +12,7 @@
 #include "Materials/Material.h"
 #include "IKA.h"
 #include "IKABomb.h"
+#include "IKAGameState.h"
 
 AIKACharacter::AIKACharacter()
 {
@@ -80,9 +81,15 @@ bool AIKACharacter::IsAlive() const
 	return Health > 0;
 }
 
-void AIKACharacter::Die()
+void AIKACharacter::Die(AIKABomb* Bomb)
 {
+	KilledBy = Bomb;
 	Health = -1.f;
+
+	AIKAGameState* const GameState = GetWorld()->GetGameState<AIKAGameState>();
+	{
+		GameState->RemainingTime = 1.f;
+	}
 }
 
 void AIKACharacter::AddBlastRangeMultiplier(float Multiplier)

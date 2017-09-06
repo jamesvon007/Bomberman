@@ -43,7 +43,7 @@ public:
 	bool IsAlive() const;
 
 	/** kill this pawn */
-	void Die();
+	void Die(AIKABomb* Bomb);
 
 	void AddBlastRangeMultiplier(float Multiplier);
 
@@ -76,6 +76,8 @@ public:
 
 	uint8 GetRemoteBombAmount() { return RemoteBombAmount;	}
 
+	AIKABomb* DieFrom() { return KilledBy;	}
+
 	// Current health of the Pawn
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
 	float Health;
@@ -106,5 +108,7 @@ private:
 	uint8 RemoteBombAmount;
 
 	UTimedPowerupRemainTime TimedPowerupRemainTime;
+
+	AIKABomb* KilledBy;
 };
 

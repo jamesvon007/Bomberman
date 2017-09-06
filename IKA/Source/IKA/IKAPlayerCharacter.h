@@ -18,5 +18,11 @@ class IKA_API AIKAPlayerCharacter : public AIKACharacter
 protected:
 	virtual void PostInitializeComponents() override;
 
+public:
+	uint8 GetPlayerIndex() { return PlayerIndex;	}
 
+	virtual FString GetHumanReadableName() const override;
+
+private:
+	uint8 PlayerIndex;
 };

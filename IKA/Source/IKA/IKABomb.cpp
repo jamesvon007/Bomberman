@@ -91,7 +91,7 @@ void AIKABomb::Tick(float DeltaTime)
 					{
 						if (AIKACharacter* Character = Cast<AIKACharacter>(Actor))
 						{
-							Character->Die();
+							Character->Die(this);
 						}
 						else if (AIKABomb* Bomb = Cast<AIKABomb>(Actor))
 						{

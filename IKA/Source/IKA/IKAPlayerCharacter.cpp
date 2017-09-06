@@ -13,7 +13,7 @@ void AIKAPlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
-	const int32 PlayerIndex = int32(AutoPossessPlayer.GetValue()) - 1;
+	PlayerIndex = int32(AutoPossessPlayer.GetValue()) - 1;
 	if (PlayerIndex == 0)
 		return;
 
@@ -21,6 +21,18 @@ void AIKAPlayerCharacter::PostInitializeComponents()
 	if (GameMode)
 	{
 		GameMode->SpawnPlayerController(ROLE_Authority, FVector::ZeroVector, FRotator::ZeroRotator);
+	}
+}
+
+FString AIKAPlayerCharacter::GetHumanReadableName() const
+{
+	if (PlayerIndex == 0)
+	{
+		return FString("Player John");
+	}
+	else
+	{
+		return FString("Player Tom");
 	}
 }
 
