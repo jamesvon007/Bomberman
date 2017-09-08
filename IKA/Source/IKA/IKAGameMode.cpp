@@ -1,11 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "IKAGameMode.h"
-#include "IKAPlayerController.h"
-#include "IKAHUD.h"
+#include "Pawn/IKAPlayerController.h"
+#include "UI/IKAHUD.h"
 #include "IKAGameState.h"
-#include "IKACharacter.h"
-#include "IKAPlayerCharacter.h"
+#include "Pawn/IKACharacter.h"
+#include "Pawn/IKAPlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "IKASaveGame.h"
+#include "Pawn/IKAAIController.h"
 
 
 AIKAGameMode::AIKAGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -38,11 +41,18 @@ void AIKAGameMode::DefaultTimer()
 	}
 }
 
-void AIKAGameMode::RestartGame()
+void AIKAGameMode::RestartLevel()
 {
 	if (GetMatchState() == MatchState::WaitingPostMatch)
 	{
-		Super::RestartGame();
+		if (UIKASaveGame* SaveGame = UIKASaveGame::LoadPersistentGame(FString("IKATDGame"), 0))
+		{
+			SaveGame->PlayerFirstScore = PlayerFirstScore;
+			SaveGame->PlayerSecondScore = PlayerSecondScore;
+			SaveGame->SavePersistentGame();
+		}
+		
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 	}
 }
 
@@ -66,6 +76,12 @@ void AIKAGameMode::HandleMatchHasStarted()
 		}
 	}
 
+	if (UIKASaveGame* SaveGame = UIKASaveGame::LoadPersistentGame(FString("IKATDGame"), 0))
+	{
+		PlayerFirstScore = SaveGame->PlayerFirstScore;
+		PlayerSecondScore = SaveGame->PlayerSecondScore;
+	}
+
 }
 
 void AIKAGameMode::PreInitializeComponents()
@@ -73,8 +89,6 @@ void AIKAGameMode::PreInitializeComponents()
 	Super::PreInitializeComponents();
 
 	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &AIKAGameMode::DefaultTimer, GetWorldSettings()->GetEffectiveTimeDilation(), true);
-
-	
 }
 
 void AIKAGameMode::FinishMatch()
@@ -84,16 +98,25 @@ void AIKAGameMode::FinishMatch()
 		DetermineMatchWinner();
 		EndMatch();
 
-		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		for (FConstControllerIterator Iterator = GetWorld()->GetControllerIterator(); Iterator; ++Iterator)
 		{
-			if (APlayerController* PC = Iterator->Get())
+			if (AController* Controller = Iterator->Get())
 			{
-				// Disable inputs
-				PC->SetIgnoreLookInput(true);
-				PC->SetIgnoreMoveInput(true);
+				if (AIKAPlayerController* PC = Cast<AIKAPlayerController>(Controller))
+				{
+					// Disable inputs
+					PC->SetIgnoreLookInput(true);
+					PC->SetIgnoreMoveInput(true);
+				}
+				else if (AIKAAIController* AIController = Cast<AIKAAIController>(Controller))
+				{
+					if (UBrainComponent* BrainComp = AIController->BrainComponent)
+					{
+						AIController->GetBehaviorComp()->StopTree();
+					}
+				}
 			}
 		}
-
 	}
 	
 }

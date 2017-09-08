@@ -22,7 +22,7 @@ class IKA_API AIKAGameMode : public AGameMode
 	/** starts new match */
 	virtual void HandleMatchHasStarted() override;
 
-	virtual void RestartGame() override;
+	void RestartLevel();
 
 	uint8 GetPlayerFirstScore() { return PlayerFirstScore;	}
 
