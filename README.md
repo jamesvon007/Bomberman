@@ -1,5 +1,6 @@
 # Bomberman
 Bomberman
+
 Generally, all files in Content folder except Blueprints aren't my creation, 
 that being said, I still did some necessary modifications to some art contents like particles.
 I have full ownership over all cpp sources.
